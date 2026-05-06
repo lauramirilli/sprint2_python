@@ -54,13 +54,25 @@ cd sprint2_python
 ```
 
 2. Instale as dependências:
+
+- Mac/Linux:
 ```bash
 pip install -r requirements.txt
 ```
+- Windows:
+```bash
+py -m pip install -r requirements.txt
+```
 
 3. Rode o projeto:
+
+- Mac/Linux:
 ```bash
 python app.py
+```
+- Windows:
+```bash
+py app.py
 ```
 
 ---
