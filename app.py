@@ -23,6 +23,9 @@ historico_traducoes = []
  
 # Contador de ID para novos materiais
 proximo_id = 4
+
+# Saída para menu principal
+saida = 'sair'
  
 # Matérias disponíveis para organização
 MATERIAS_DISPONIVEIS = [
@@ -54,7 +57,7 @@ def pausar():
     input("\n  ↩  Pressione ENTER para voltar ao menu...")
 
 
-def input_validado(msg, tipo="str", opcoes=None, min_val=None, max_val=None):
+def input_validado(msg, tipo="str", opcoes=None, min_val=None, max_val=None, permite_sair=True):
     """
     Lê e valida entrada do usuário.
     Suporta validação de tipo inteiro, lista de opções e faixa numérica.
@@ -65,6 +68,9 @@ def input_validado(msg, tipo="str", opcoes=None, min_val=None, max_val=None):
         if not entrada:
             print("  !!  Campo obrigatório. Tente novamente.")
             continue
+
+        if permite_sair and entrada.lower() == "sair":
+            return "sair"
  
         if tipo == "int":
             if not entrada.lstrip("-").isdigit():
@@ -117,19 +123,18 @@ def digitalizar_foto():
         print(f"  [{i}] {tipo.capitalize()}")
  
     print()
+    print('\033[31m' + '(Digite "sair" para voltar ao menu)' + '\033[0;0m')
     escolha_tipo = input_validado(
-        "  ➤ Tipo do material (número)"
-        "(Digite '4' para voltar ao menu): ",
-        tipo="int", min_val=1, max_val=len(TIPOS_MATERIAL) + 1
+        "  ➤ Tipo do material (número): ",
+        tipo="int", min_val=1, max_val=len(TIPOS_MATERIAL)
     )
-    if escolha_tipo == 4:
+    if escolha_tipo == 'sair':
         return
     tipo_material = TIPOS_MATERIAL[escolha_tipo - 1]
  
     # Título do material
-    titulo_mat = input_validado(
-        f"\n  Título para este {tipo_material} (ex: 'Aula 03')"
-        f"(Digite 'sair' para voltar ao menu) "
+    titulo_mat = input_validado( 
+       f"\n  Título para este {tipo_material} (ex: 'Aula 03'): "
     )
     if titulo_mat.lower() == 'sair':
         return
@@ -138,20 +143,21 @@ def digitalizar_foto():
     print("\n  Matérias disponíveis:\n")
     for i, materia in enumerate(MATERIAS_DISPONIVEIS, 1):
         print(f"  [{i}] {materia}")
- 
+    
+    print('\033[31m' + '(Digite "sair" para voltar ao menu)' + '\033[0;0m')
     escolha_mat = input_validado(
-        "\n  ➤ Matéria (número): "
-        "(Digite '8' para voltar ao menu) ",
+        "\n  ➤ Matéria (número): ",
         tipo="int", min_val=1, max_val=len(MATERIAS_DISPONIVEIS) + 1
     )
-    if escolha_mat == 8:
+    if escolha_mat == 'sair':
         return
     materia = MATERIAS_DISPONIVEIS[escolha_mat - 1]
  
     # Conteúdo extraído (simula o OCR/texto digitalizado)
     print(f"\n  Cole ou digite o texto extraído da foto ({tipo_material}):")
     print("  (Em uma versão real, o Google Lens extrairia automaticamente da imagem)\n")
-    conteudo = input_validado("  Conteúdo: (Digite 'sair' para voltar ao menu) ")
+    print('\033[31m' + '(Digite "sair" para voltar ao menu)' + '\033[0;0m')
+    conteudo = input_validado("  Conteúdo: ")
     if conteudo.lower() == 'sair':
         return
  
@@ -180,10 +186,14 @@ def copiar_conteudo():
     """
     titulo("COPIAR CONTEÚDO")
     exibir_lista_materiais(materiais)
+    print('\033[31m' + '(Digite "sair" para voltar ao menu)' + '\033[0;0m')
     id_mat = input_validado(
-        "\n  ➤ Selecione o ID do material que deseja copiar o conteúdo: ",
+        "\n  ➤ Selecione o ID do material que deseja copiar o conteúdo ",
         tipo="int", min_val=1
     )
+    if id_mat == 'sair':
+        return
+    
     material = buscar_material_por_id(id_mat)
     if not material:
         print(f"\n  !!  Material ID {id_mat} não encontrado.")
@@ -197,121 +207,9 @@ def copiar_conteudo():
     
     pausar()
 
-# FUNCIONALIDADE 2 (Biblioteca de Materiais)
- 
-def minha_biblioteca():
-    """
-    Exibe, busca e lê os materiais digitalizados pelo estudante.
-    Resolve a dor principal: fotos perdidas na galeria misturadas
-    com selfies, aqui tudo fica organizado por matéria e tipo.
-    """
-    titulo("MINHA BIBLIOTECA",
-           "Seus materiais de estudo organizados")
- 
-    if not materiais:
-        print("\n    Biblioteca vazia. Digitalize uma foto primeiro.\n")
-        pausar()
-        return
- 
-    print("\n  [1] Ver todos os materiais")
-    print("  [2] Filtrar por matéria")
-    print("  [3] Buscar por palavra-chave")
-    print("  [4] Ler conteúdo de um material")
-    print("  [5] Resumo de um material")
-    print()
- 
-    opc = input_validado("  ➤ Opção: ", opcoes=["1", "2", "3", "4", "5"])
- 
-    # Ver todos
-    if opc == "1":
-        exibir_lista_materiais(materiais)
- 
-    # Filtrar por matéria
-    elif opc == "2":
-        print("\n  Matérias disponíveis na biblioteca:\n")
-        # Coleta matérias únicas dos materiais salvos
-        materias_salvas = list({material[2] for material in materiais})
-        for i, material in enumerate(materias_salvas, 1):
-            print(f"  [{i}] {material}")
- 
-        escolha = input_validado(
-            "\n  ➤ Número da matéria: ",
-            tipo="int", min_val=1, max_val=len(materias_salvas)
-        )
-        materia_filtro = materias_salvas[escolha - 1]
-        filtrados = [material for material in materiais if material[2] == materia_filtro]
-        print(f"\n  Materiais de '{materia_filtro}':")
-        exibir_lista_materiais(filtrados)
- 
-    # Buscar por palavra-chave
-    elif opc == "3":
-        termo = input_validado("\n  Palavra-chave para busca: ").lower()
-        encontrados = [
-            material for material in materiais
-            if termo in material[1].lower() or termo in material[4].lower()
-        ]
-        if encontrados:
-            print(f"\n  {len(encontrados)} resultado(s) para '{termo}':")
-            exibir_lista_materiais(encontrados)
-        else:
-            print(f"\n    Nenhum material encontrado com '{termo}'.")
- 
-    # Ler conteúdo
-    elif opc == "4":
-        exibir_lista_materiais(materiais)
-        id_leitura = input_validado(
-            "\n  ➤ ID do material para ler: ",
-            tipo="int", min_val=1
-        )
-        material = buscar_material_por_id(id_leitura)
-        if material:
-            linha()
-            print(f"\n    {material[1]}")
-            print(f"    {material[2]}  |  {material[3].capitalize()}  |  {material[5]}")
-            linha("-")
-            print(f"\n  {material[4]}\n")
-            linha()
-        else:
-            print(f"\n  !!  Material ID {id_leitura} não encontrado.")
-
-    elif opc == "5":
-        print("Para esse protótipo estão disponivéis apenas os resumos dos conteúdos de exemplo!")
-        exibir_lista_materiais(materiais[:3])
-        id_leitura = input_validado(
-            "\n  ➤ ID do material para resumir: ",
-            tipo="int", min_val=1
-        )
-        material = buscar_material_por_id(id_leitura)
-        
-        if material[0] == 1:
-            print("    Brasil Colônia: Período de exploração por Portugal (1500–1822), " \
-            "baseado na extração de recursos e trabalho escravizado.")
-
-        elif material[0] == 2:
-            print("    Filosofia grega: Busca racional por explicações sobre o mundo, o conhecimento e a ética, " \
-            "com pensadores como Sócrates, Platão e Aristóteles.")
-
-        elif material[0] == 3:
-            print("    Números complexos: Conjunto numérico que inclui a unidade imaginária (i), " \
-            "permitindo representar raízes de números negativos.")
-
- 
-    pausar()
- 
- 
-def exibir_lista_materiais(lista):
-    """Função auxiliar para exibir tabela de materiais."""
-    linha("-")
-    print(f"  {'ID':<5} {'TÍTULO':<32} {'MATÉRIA':<22} {'TIPO'}")
-    linha("-")
-    for m in lista:
-        print(f"  {m[0]:<5} {m[1][:31]:<32} {m[2][:21]:<22} {m[3].capitalize()}")
-    linha("-")
-    print(f"  Total: {len(lista)} material(is).")
- 
 
 #  FUNCIONALIDADE 3 (Traduzir Conteúdo)
- 
+
 def traduzir_conteudo():
     """
     Simula a tradução de texto extraído de uma foto ou de material
@@ -323,20 +221,26 @@ def traduzir_conteudo():
     """
     titulo("TRADUZIR CONTEÚDO",
            "Português → Inglês  |  +50 idiomas na versão completa")
- 
+    
+    print('\033[31m' + '(Digite "sair" para voltar ao menu)' + '\033[0;0m')
     print("\n  Fonte do texto:\n")
     print("  [1] Digitar texto manualmente")
     print("  [2] Traduzir material da biblioteca")
     print()
  
     fonte = input_validado("  ➤ Opção: ", opcoes=["1", "2"])
+    if fonte == 'sair':
+        return
  
     texto_original = ""
     origem_titulo = "Texto avulso"
  
+    print('\033[31m' + '(Digite "sair" para voltar ao menu)' + '\033[0;0m')
     if fonte == "1":
         print("\n  Digite o texto em Português para traduzir:\n")
         texto_original = input_validado("  Texto: ")
+    if texto_original == 'sair':
+        return
  
     elif fonte == "2":
         if not materiais:
@@ -344,10 +248,13 @@ def traduzir_conteudo():
             pausar()
             return
         exibir_lista_materiais(materiais)
+        print('\033[31m' + '(Digite "sair" para voltar ao menu)' + '\033[0;0m')
         id_mat = input_validado(
             "\n  ➤ ID do material: ",
             tipo="int", min_val=1
         )
+        if id_mat == 'sair':
+            return
         material = buscar_material_por_id(id_mat)
         if not material:
             print(f"\n  !!  Material ID {id_mat} não encontrado.")
@@ -393,6 +300,133 @@ def traduzir_conteudo():
         print(f"    Salvo na biblioteca com ID {novo[0]}.")
  
     pausar()
+
+# FUNCIONALIDADE 4 (Biblioteca de Materiais)
+ 
+def minha_biblioteca():
+    """
+    Exibe, busca e lê os materiais digitalizados pelo estudante.
+    Resolve a dor principal: fotos perdidas na galeria misturadas
+    com selfies, aqui tudo fica organizado por matéria e tipo.
+    """
+    titulo("MINHA BIBLIOTECA",
+           "Seus materiais de estudo organizados")
+ 
+    if not materiais:
+        print("\n    Biblioteca vazia. Digitalize uma foto primeiro.\n")
+        pausar()
+        return
+ 
+    print("\n  [1] Ver todos os materiais")
+    print("  [2] Filtrar por matéria")
+    print("  [3] Buscar por palavra-chave")
+    print("  [4] Ler conteúdo de um material")
+    print("  [5] Resumo de um material")
+    print()
+    
+    print('\033[31m' + '(Digite "sair" para voltar ao menu)' + '\033[0;0m')
+    opc = input_validado("  ➤ Opção: ", opcoes=["1", "2", "3", "4", "5"])
+    if opc == 'sair':
+        return
+ 
+    # Ver todos
+    if opc == "1":
+        exibir_lista_materiais(materiais)
+ 
+    # Filtrar por matéria
+    elif opc == "2":
+        print("\n  Matérias disponíveis na biblioteca:\n")
+        # Coleta matérias únicas dos materiais salvos
+        materias_salvas = list({material[2] for material in materiais})
+        for i, material in enumerate(materias_salvas, 1):
+            print(f"  [{i}] {material}")
+
+        print('\033[31m' + '(Digite "sair" para voltar ao menu)' + '\033[0;0m')
+        escolha = input_validado(
+            "\n  ➤ Número da matéria: ",
+            tipo="int", min_val=1, max_val=len(materias_salvas)
+        )
+        if escolha == 'sair':
+            return
+        materia_filtro = materias_salvas[escolha - 1]
+        filtrados = [material for material in materiais if material[2] == materia_filtro]
+        print(f"\n  Materiais de '{materia_filtro}':")
+        exibir_lista_materiais(filtrados)
+ 
+    # Buscar por palavra-chave
+    elif opc == "3":
+        print('\033[31m' + '(Digite "sair" para voltar ao menu)' + '\033[0;0m')
+        termo = input_validado("\n  Palavra-chave para busca: ").lower()
+        if termo == 'sair':
+            return
+        encontrados = [
+            material for material in materiais
+            if termo in material[1].lower() or termo in material[4].lower()
+        ]
+        if encontrados:
+            print(f"\n  {len(encontrados)} resultado(s) para '{termo}':")
+            exibir_lista_materiais(encontrados)
+        else:
+            print(f"\n    Nenhum material encontrado com '{termo}'.")
+ 
+    # Ler conteúdo
+    elif opc == "4":
+        exibir_lista_materiais(materiais)
+        print('\033[31m' + '(Digite "sair" para voltar ao menu)' + '\033[0;0m')
+        id_leitura = input_validado(
+            "\n  ➤ ID do material para ler: ",
+            tipo="int", min_val=1
+        )
+        if id_leitura == 'sair':
+            return
+        material = buscar_material_por_id(id_leitura)
+        if material:
+            linha()
+            print(f"\n    {material[1]}")
+            print(f"    {material[2]}  |  {material[3].capitalize()}  |  {material[5]}")
+            linha("-")
+            print(f"\n  {material[4]}\n")
+            linha()
+        else:
+            print(f"\n  !!  Material ID {id_leitura} não encontrado.")
+
+    elif opc == "5":
+        print("Para esse protótipo estão disponivéis apenas os resumos dos conteúdos de exemplo!")
+        exibir_lista_materiais(materiais[:3])
+        print('\033[31m' + '(Digite "sair" para voltar ao menu)' + '\033[0;0m')
+        id_leitura = input_validado(
+            "\n  ➤ ID do material para resumir: ",
+            tipo="int", min_val=1
+        )
+        if id_leitura == 'sair':
+            return
+        material = buscar_material_por_id(id_leitura)
+        
+        if material[0] == 1:
+            print("    Brasil Colônia: Período de exploração por Portugal (1500–1822), " \
+            "baseado na extração de recursos e trabalho escravizado.")
+
+        elif material[0] == 2:
+            print("    Filosofia grega: Busca racional por explicações sobre o mundo, o conhecimento e a ética, " \
+            "com pensadores como Sócrates, Platão e Aristóteles.")
+
+        elif material[0] == 3:
+            print("    Números complexos: Conjunto numérico que inclui a unidade imaginária (i), " \
+            "permitindo representar raízes de números negativos.")
+
+ 
+    pausar()
+ 
+ 
+def exibir_lista_materiais(lista):
+    """Função auxiliar para exibir tabela de materiais."""
+    linha("-")
+    print(f"  {'ID':<5} {'TÍTULO':<32} {'MATÉRIA':<22} {'TIPO'}")
+    linha("-")
+    for m in lista:
+        print(f"  {m[0]:<5} {m[1][:31]:<32} {m[2][:21]:<22} {m[3].capitalize()}")
+    linha("-")
+    print(f"  Total: {len(lista)} material(is).")
 
 
 #  MENU PRINCIPAL
