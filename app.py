@@ -118,15 +118,21 @@ def digitalizar_foto():
  
     print()
     escolha_tipo = input_validado(
-        "  ➤ Tipo do material (número): ",
-        tipo="int", min_val=1, max_val=len(TIPOS_MATERIAL)
+        "  ➤ Tipo do material (número)"
+        "(Digite '4' para voltar ao menu): ",
+        tipo="int", min_val=1, max_val=len(TIPOS_MATERIAL) + 1
     )
+    if escolha_tipo == 4:
+        return
     tipo_material = TIPOS_MATERIAL[escolha_tipo - 1]
  
     # Título do material
     titulo_mat = input_validado(
-        f"\n  Título para este {tipo_material} (ex: 'Aula 03'): "
+        f"\n  Título para este {tipo_material} (ex: 'Aula 03')"
+        f"(Digite 'sair' para voltar ao menu) "
     )
+    if titulo_mat.lower() == 'sair':
+        return
  
     # Seleção de matéria
     print("\n  Matérias disponíveis:\n")
@@ -134,15 +140,20 @@ def digitalizar_foto():
         print(f"  [{i}] {materia}")
  
     escolha_mat = input_validado(
-        "\n  ➤ Matéria (número): ",
-        tipo="int", min_val=1, max_val=len(MATERIAS_DISPONIVEIS)
+        "\n  ➤ Matéria (número): "
+        "(Digite '8' para voltar ao menu) ",
+        tipo="int", min_val=1, max_val=len(MATERIAS_DISPONIVEIS) + 1
     )
+    if escolha_mat == 8:
+        return
     materia = MATERIAS_DISPONIVEIS[escolha_mat - 1]
  
     # Conteúdo extraído (simula o OCR/texto digitalizado)
     print(f"\n  Cole ou digite o texto extraído da foto ({tipo_material}):")
     print("  (Em uma versão real, o Google Lens extrairia automaticamente da imagem)\n")
-    conteudo = input_validado("  Conteúdo: ")
+    conteudo = input_validado("  Conteúdo: (Digite 'sair' para voltar ao menu) ")
+    if conteudo.lower() == 'sair':
+        return
  
     # Salva na biblioteca
     novo_material = [proximo_id, titulo_mat, materia, tipo_material, conteudo, "Português"]
